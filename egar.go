@@ -106,12 +106,12 @@ func init(){
 // main app function
 
 
-func GetEgarat() {
+func GetEgarat(yearDue,monthDue int) {
 	//welcome
 	l.Println("Welcome to ", o.Args, " ", t0)
 
 	//finding and formating date path infix
-	yearDue, monthDue, _ := TimeDue.Date()
+	//yearDue, monthDue, _ = TimeDue.Date()
 	stringDue := f.Sprintf("%4d%[3]c%02[2]d", yearDue, monthDue, o.PathSeparator)
 	l.Println(stringDue)
 
@@ -158,7 +158,7 @@ func GetEgarat() {
 	//reading message file
 	message=func()string{ 
 		r,e:=o.ReadFile(messagedir + sep + stringDue);
-		if e!=nil{panic(e)};
+		if e!=nil{notes=append(notes,e.Error())};
 		return string(r)}()
 	//messageReader, err := o.Open(messagedir + sep + stringDue)
 	//if err != nil {
@@ -278,10 +278,19 @@ func main() {
 	//Year Monyh egar
 	YearMonthEgar := t.Now()
 	year := 0
-	fl.IntVar(&year, "yeat", 2020, "year of egar")
+	month :=0
+	server :=false
+	fl.IntVar(&year, "year", t.Now().Year(), "year of egar")
+	fl.IntVar(&year, "y", t.Now().Year(), "year of egar")
+	fl.IntVar(&month, "month", int(t.Now().Month()), "month of egar")
+	fl.IntVar(&month, "m", int(t.Now().Month()), "month of egar")
+	fl.BoolVar(&server, "server", false, "server")
+	fl.BoolVar(&server, "s", false, "server")
 	fl.Parse()
+	f.Println("s",server)
+	f.Println(server)
 	f.Println("egar", year, YearMonthEgar)
-	GetEgarat()
+	GetEgarat(year,month)
 l.Printf("kk%f\n",egarat[len(egarat)-1].StairElecFare)
 	f.Println("Done")
 }
