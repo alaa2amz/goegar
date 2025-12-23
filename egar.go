@@ -14,6 +14,8 @@ import (
 	s "strings"
 	t "time"
 	l "log"
+	h "net/http"
+	sc "strconv"
 )
 
 const (
@@ -79,7 +81,7 @@ var (
 	message = ""
 	sep                       = string(o.PathSeparator)
 	egarat                    = []Egar{}
-	waterFactor       float64 = 7.5
+	waterFactor       float64 = 6.5
 	factor            float64 = 7.0
 	stairElecPlate            = "790"
 	basementElecPlate         = "789"
@@ -107,7 +109,6 @@ func init(){
 
 
 func GetEgarat(yearDue,monthDue int) {
-	//welcome
 	l.Println("Welcome to ", o.Args, " ", t0)
 
 	//finding and formating date path infix
@@ -274,12 +275,34 @@ notes:
 	}
 }
 
+func handler(w h.ResponseWriter,r *h.Request){
+//	if r.Method == "GET"
+
+	w.Write( []byte("Hello") )
+	
+	year := sc.Itoa( t.Now().Year() )
+	month := sc.Itoa( int( t.Now().Month() ) )
+	if len(month) == 1 { 
+		month = "0" + month
+	}
+	//year separator month
+	ysm := year + "/" + month
+	elecfile,err := o.OpenFile(
+		"elec/" + ysm, o.O_RDWR | o.O_CREATE, 644)
+	if err != nil {
+		panic(err)
+	}
+	
+	w.Write( []byte(ysm) )
+	i.Copy( w, elecfile )
+}
 func main() {
 	//Year Monyh egar
-	YearMonthEgar := t.Now()
 	year := 0
 	month :=0
 	server :=false
+
+	//flags
 	fl.IntVar(&year, "year", t.Now().Year(), "year of egar")
 	fl.IntVar(&year, "y", t.Now().Year(), "year of egar")
 	fl.IntVar(&month, "month", int(t.Now().Month()), "month of egar")
@@ -287,10 +310,14 @@ func main() {
 	fl.BoolVar(&server, "server", false, "server")
 	fl.BoolVar(&server, "s", false, "server")
 	fl.Parse()
-	f.Println("s",server)
-	f.Println(server)
-	f.Println("egar", year, YearMonthEgar)
+	if !server{
 	GetEgarat(year,month)
+}else{
+	h.HandleFunc("/egar",handler)
+	l.Default().SetOutput(o.Stdout)
+	l.Fatal(h.ListenAndServe(":8080",nil))
+
+}
 l.Printf("kk%f\n",egarat[len(egarat)-1].StairElecFare)
 	f.Println("Done")
 }
